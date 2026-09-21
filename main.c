@@ -11,7 +11,7 @@ uint32_t fib(uint32_t n) {
         return 0;
     }
 
-    for(i = 0; i < n; i++) {
+    for(i = 0; i < n-1; i++) {
         c = a + b;
         a = b;
         b = c;
@@ -21,14 +21,29 @@ uint32_t fib(uint32_t n) {
 
 }
 
-int main() {
-    uint32_t i = 0;
-    printf("test\n");
-
-    for(i = 0; i < 100; i++) {
-        printf("fib %d: %d\n",i,fib(i));
+uint32_t strToInt(const char* s) {
+    uint32_t r = 0;
+    while(*s != '\0') {
+        r *= 10;
+        r += *s - '0';
+        s++;
     }
+    return r;
+}
 
+int main(int argc, char** argv) {
+
+    if(argc == 1) {
+        return -1;
+    }
+    for(int i = 1; i < argc; i++) {
+        const char* thisArg = argv[i];
+        printf("got argument: ");
+        printf(thisArg);
+        uint32_t thisInt = strToInt(thisArg);
+        printf("\nthat is %d in int!!\n",thisInt);
+        printf("fib %d: %d\n",thisInt,fib(thisInt));
+    }
 
     return 0;
 }
