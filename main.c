@@ -51,15 +51,16 @@ int main(int argc, char** argv) {
             exit(children[i-1]);
         } else if (children[i-1] == 0) { //child
             printf("child calculating %d\n",thisInt);
-            exit(fib(thisInt));
+            printf("fib(%d) is %d\n",thisInt,fib(thisInt));
+            break;
         }
     }
 
-    for(int i = 0; i < sizeof(children)/sizeof(children[0]); i++) {
-        int stat = 0;
-        waitpid(children[i],&stat,0);
-
-    }
+    // for(int i = 0; i < sizeof(children)/sizeof(children[0]); i++) {
+    //     int stat = 0;
+    //     waitpid(children[i],&stat,0);
+    //     printf("child %d status is %d\n",i,stat);
+    // }
 
     return 0;
 }
