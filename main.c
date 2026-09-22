@@ -5,6 +5,8 @@
 #include <sys/wait.h>
 #include <string.h>
 
+#define MAX_ARGS 8
+
 uint32_t fib(uint32_t n) {
     uint32_t a = 0;
     uint32_t b = 1;
@@ -41,11 +43,10 @@ int main(int argc, char** argv) {
         return -1;
     }
 
-    __pid_t children[8] = {0};
-    int pipes[2][8];
+    __pid_t children[MAX_ARGS] = {0};
+    int pipes[2][MAX_ARGS];
     for(int i = 1; i < argc; i++) {
         const char* thisArg = argv[i];
-        printf("got argument: %s\n",thisArg);
         uint32_t thisInt = strToInt(thisArg);
         pipe(pipes[i-1]);
         children[i-1] = fork();
@@ -53,13 +54,13 @@ int main(int argc, char** argv) {
             printf("Could not create fork\n");
             exit(children[i-1]);
         } else if (children[i-1] == 0) { //child
-            printf("child calculating %d\n",thisInt);
-            printf("fib(%d) is %d\n",thisInt,fib(thisInt));
-            if(write(pipes[i-1][1],"test",strlen("test"))!=strlen("test")) {
+            char buf[64];
+            sprintf(buf,"%d",fib(thisInt));
+            if(write(pipes[i-1][1],buf,strlen(buf)+1)!=strlen(buf)+1) {
                 printf("couldnt write!\n");
                 exit(-1);
             } else {
-                printf("wrote to pipe!\n");
+                printf("wrote %s to pipe!\n",buf);
             }
             exit(0);
         }
@@ -74,7 +75,6 @@ int main(int argc, char** argv) {
         } else {
             printf("read %s from pipe!\n",buf);
         }
-        printf("child %d status is %d\n",i,stat);
     }
 
     return 0;
