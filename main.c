@@ -39,7 +39,7 @@ uint32_t strToInt(const char* s) {
 
 int main(int argc, char** argv) {
 
-    if(argc == 1) {
+    if(argc == 1 || argc-1 > MAX_ARGS) {
         return -1;
     }
 
@@ -60,7 +60,7 @@ int main(int argc, char** argv) {
                 printf("couldnt write!\n");
                 exit(-1);
             } else {
-                printf("wrote %s to pipe!\n",buf);
+                //printf("wrote %s to pipe!\n",buf);
             }
             exit(0);
         }
@@ -73,7 +73,7 @@ int main(int argc, char** argv) {
         if(read(pipes[i][0],&buf,sizeof(buf)) == 0) {
             printf("couldnt read from pipe!\n");
         } else {
-            printf("read %s from pipe!\n",buf);
+            printf("Fibonacci of %s is %s\n",argv[i+1],buf);
         }
     }
 
