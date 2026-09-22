@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <sys/wait.h>
+#include <string.h>
 
 uint32_t fib(uint32_t n) {
     uint32_t a = 0;
@@ -41,10 +42,12 @@ int main(int argc, char** argv) {
     }
 
     __pid_t children[8] = {0};
+    int pipes[2][8];
     for(int i = 1; i < argc; i++) {
         const char* thisArg = argv[i];
         printf("got argument: %s\n",thisArg);
         uint32_t thisInt = strToInt(thisArg);
+        pipe(pipes[i-1]);
         children[i-1] = fork();
         if(children[i-1] < 0) {
             printf("Could not create fork\n");
@@ -52,15 +55,27 @@ int main(int argc, char** argv) {
         } else if (children[i-1] == 0) { //child
             printf("child calculating %d\n",thisInt);
             printf("fib(%d) is %d\n",thisInt,fib(thisInt));
-            break;
+            if(write(pipes[i-1][1],"test",strlen("test"))!=strlen("test")) {
+                printf("couldnt write!\n");
+                exit(-1);
+            } else {
+                printf("wrote to pipe!\n");
+            }
+            exit(0);
         }
     }
 
-    // for(int i = 0; i < sizeof(children)/sizeof(children[0]); i++) {
-    //     int stat = 0;
-    //     waitpid(children[i],&stat,0);
-    //     printf("child %d status is %d\n",i,stat);
-    // }
+    for(int i = 0; i < argc-1; i++) {
+        int stat = 0;
+        waitpid(children[i],&stat,0);
+        char buf[64];
+        if(read(pipes[i][0],&buf,sizeof(buf)) == 0) {
+            printf("couldnt read from pipe!\n");
+        } else {
+            printf("read %s from pipe!\n",buf);
+        }
+        printf("child %d status is %d\n",i,stat);
+    }
 
     return 0;
 }
