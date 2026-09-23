@@ -6,6 +6,12 @@
 #include <string.h>
 
 #define MAX_ARGS 8
+#define STR_BUF_SIZE 32
+
+/* @brief Return the nth Fibonacci number.
+ * @param n The index of the number to return.
+ * @return The nth Fibonacci number.
+ */
 
 uint32_t fib(uint32_t n) {
     uint32_t a = 0;
@@ -26,6 +32,11 @@ uint32_t fib(uint32_t n) {
     return b;
 }
 
+/* @brief Convert a string to a positive integer.
+ * @param str Pointer to the string. Must be null-terminated and contain a positive integer.
+ * @return The integer representation in the string.
+ */
+
 uint32_t strToInt(const char* str) {
     uint32_t result = 0;
 
@@ -44,7 +55,7 @@ uint32_t strToInt(const char* str) {
 int main(int argc, char** argv) {
 
     if(argc == 1 || argc-1 > MAX_ARGS) {
-        printf("Usage: ./main (x0) [x1] [x2] ... [x%d]\n",MAX_ARGS-1);
+        printf("Usage: ./main (n0) [n1] [n2] ... [n%d]\n",MAX_ARGS-1);
         return -1;
     }
 
@@ -61,12 +72,12 @@ int main(int argc, char** argv) {
         }
         children[i-1] = fork();
 
-        if(children[i-1] < 0) {
+        if(children[i-1] < 0) { //error
             printf("Could not create fork\n");
             exit(children[i-1]);
 
         } else if (children[i-1] == 0) { //child
-            char buf[64];
+            char buf[STR_BUF_SIZE];
             sprintf(buf,"%d",fib(thisInt));
             if(write(pipes[i-1][1],buf,strlen(buf)+1)!=strlen(buf)+1) {
                 exit(-1);
@@ -75,14 +86,14 @@ int main(int argc, char** argv) {
         }
     }
 
-    // parent
+    //parent only
     for(int i = 0; i < argc-1; i++) {
         int stat = 0;
         waitpid(children[i],&stat,0);
         if(stat != 0) {
             printf("Child %d failed with code %d\n",i,stat);
         }
-        char buf[64];
+        char buf[STR_BUF_SIZE];
         if(read(pipes[i][0],&buf,sizeof(buf)) == 0) {
             printf("Could not read from pipe %d.\n",i);
         } else {
