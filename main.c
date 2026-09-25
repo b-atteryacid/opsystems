@@ -53,18 +53,22 @@ uint32_t strToInt(const char* str) {
 }
 
 int main(int argc, char** argv) {
+    int children[MAX_ARGS];
+    int pipes[2][MAX_ARGS];
+    const char* thisArg;
+    uint32_t thisInt;
+    int i;
+    int stat;
+    char buf[STR_BUF_SIZE];
 
     if(argc == 1 || argc-1 > MAX_ARGS) {
         printf("Usage: ./main (n0) [n1] [n2] ... [n%d]\n",MAX_ARGS-1);
         return -1;
     }
 
-    __pid_t children[MAX_ARGS] = {0};
-    int pipes[2][MAX_ARGS] = {0};
-
-    for(int i = 1; i < argc; i++) {
-        const char* thisArg = argv[i];
-        uint32_t thisInt = strToInt(thisArg);
+    for(i = 1; i < argc; i++) {
+        thisArg = argv[i];
+        thisInt = strToInt(thisArg);
 
         if(pipe(pipes[i-1]) < 0) {
             printf("Could not create pipe\n");
@@ -72,12 +76,14 @@ int main(int argc, char** argv) {
         }
         children[i-1] = fork();
 
-        if(children[i-1] < 0) { //error
+        /*error*/
+        if(children[i-1] < 0) {
             printf("Could not create fork\n");
             exit(children[i-1]);
 
-        } else if (children[i-1] == 0) { //child
-            char buf[STR_BUF_SIZE];
+        }
+        /*child*/
+        else if (children[i-1] == 0) {
             sprintf(buf,"%d",fib(thisInt));
             if(write(pipes[i-1][1],buf,strlen(buf)+1)!=strlen(buf)+1) {
                 exit(-1);
@@ -86,14 +92,13 @@ int main(int argc, char** argv) {
         }
     }
 
-    //parent only
-    for(int i = 0; i < argc-1; i++) {
-        int stat = 0;
+    /*parent only*/
+    for( i = 0; i < argc-1; i++) {
+        stat = 0;
         waitpid(children[i],&stat,0);
         if(stat != 0) {
             printf("Child %d failed with code %d\n",i,stat);
         }
-        char buf[STR_BUF_SIZE];
         if(read(pipes[i][0],&buf,sizeof(buf)) == 0) {
             printf("Could not read from pipe %d.\n",i);
         } else {
