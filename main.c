@@ -12,7 +12,6 @@
  * @param n The index of the number to return.
  * @return The nth Fibonacci number.
  */
-
 uint32_t fib(uint32_t n) {
     uint32_t a = 0;
     uint32_t b = 1;
@@ -40,6 +39,7 @@ uint32_t strToInt(const char* str) {
     uint32_t result = 0;
 
     while(*str != '\0') {
+        /*handle non-digits*/
         if(*str < '0' || *str > '9') {
             return result;
         }
@@ -65,6 +65,7 @@ int main(int argc, char** argv) {
         return -1;
     }
 
+    /*Spawn children and setup pipes*/
     for(i = 1; i < argc; i++) {
         thisArg = argv[i];
         thisInt = strToInt(thisArg);
@@ -92,7 +93,7 @@ int main(int argc, char** argv) {
         }
     }
 
-    /*parent only*/
+    /*Parent only, wait and read from pipes*/
     for( i = 0; i < argc-1; i++) {
         stat = 0;
         waitpid(children[i],&stat,0);
